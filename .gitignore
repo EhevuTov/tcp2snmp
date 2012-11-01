@@ -1,0 +1,6 @@
+*~
+*.swp
+*.log
+.monitor
+.DS_Store
+node_modules
