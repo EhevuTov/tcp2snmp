@@ -3,12 +3,7 @@
 {
   'target_name': 'async',
   'type': 'executable',
-  'variables' : {
-   'target_arch' : 'x64',
-   'host_arch' : 'x86_64',
-   'arch' : 'x64',
-   'ARCHS' : ['x86_64'],
-  },
+  'cflags_cc!': [ '-fno-rtti' ],
   'sources': [
     'async_tcp_server.cc',
   ],
@@ -18,7 +13,7 @@
   'link_settings': {
     'libraries': [
       '-lm',
-      '-lboost_system-mt',
+      '-lboost_system',
     ],
     'library_dirs': [
       '/usr/local/lib',
