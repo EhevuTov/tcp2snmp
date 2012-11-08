@@ -101,6 +101,15 @@ private:
   tcp::acceptor acceptor_;
 };
 
+void handler( const boost::system::error_code& error, int signal_number)
+{
+  if (!error)
+  {
+    // A signal occurred.
+    std::cout << "Signal Received" << std::endl;
+  }
+}
+
 int main(int argc, char* argv[])
 {
   try
@@ -112,6 +121,10 @@ int main(int argc, char* argv[])
     }
 
     boost::asio::io_service io_service;
+    // Construct a signal set registered for process termination.
+    boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
+    // Start an asynchronous wait for one of the signals to occur.
+    signals.async_wait(handler);
 
     using namespace std; // For atoi.
     server s(io_service, atoi(argv[1]));
