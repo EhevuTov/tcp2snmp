@@ -3,6 +3,12 @@
 {
   'target_name': 'async',
   'type': 'executable',
+  'cflags_cc!': [ '-fno-rtti' ],
+  'defines': [
+    'NDEBUG',
+    'USE_THREADS',
+    'EXPERIMENT=1',
+  ],
   'sources': [
     'async_tcp_server.cc',
   ],
