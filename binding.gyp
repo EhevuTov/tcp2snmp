@@ -19,6 +19,7 @@
       ],
       'libraries': [
         '-lboost_system-mt',
+        '-lnetsnmp',
       ],
       'library_dirs': [
         '/usr/local/lib',
@@ -34,6 +35,7 @@
       ],
       'libraries': [
         '-lboost_system',
+        '-lnetsnmp',
       ],
       'library_dirs': [
         '/usr/local/lib',
