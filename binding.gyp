@@ -20,6 +20,10 @@
       'libraries': [
         '-lboost_system-mt',
         '-lnetsnmp',
+        '-lnetsnmpagent',
+        '-lnetsnmphelpers',
+        '-lnetsnmpmibs',
+        '-lnetsnmptrapd',
       ],
       'library_dirs': [
         '/usr/local/lib',
@@ -36,6 +40,10 @@
       'libraries': [
         '-lboost_system',
         '-lnetsnmp',
+        '-lnetsnmpagent',
+        '-lnetsnmphelpers',
+        '-lnetsnmpmibs',
+        '-lnetsnmptrapd',
       ],
       'library_dirs': [
         '/usr/local/lib',
@@ -81,6 +89,53 @@
     ]
   ],
   'test': 0,
-}
+},
+{
+  'target_name': 'snmptrap_simple',
+  'type': 'executable',
+  'sources': [
+    'test/snmptrap_simple.c',
+  ],
+  'conditions': [
+    ['OS=="mac"', {
+      'include_dirs': [
+        '/usr/local/include',
+      ],
+      'libraries': [
+        '-lboost_system-mt',
+        '-lnetsnmp',
+        '-lnetsnmpagent',
+        '-lnetsnmphelpers',
+        '-lnetsnmpmibs',
+        '-lnetsnmptrapd',
+      ],
+      'library_dirs': [
+        '/usr/local/lib',
+      ],
+      'xcode_settings': {
+        'GCC_ENABLE_CPP_RTTI': 'YES'
+      }
+    }
+    ],
+    ['OS=="freebsd"', {
+      'include_dirs': [
+        '/usr/local/include',
+      ],
+      'libraries': [
+        '-lboost_system',
+        '-lnetsnmp',
+        '-lnetsnmpagent',
+        '-lnetsnmphelpers',
+        '-lnetsnmpmibs',
+        '-lnetsnmptrapd',
+      ],
+      'library_dirs': [
+        '/usr/local/lib',
+      ],
+    }
+    ]
+  ],
+  'test': 0,
+},
 ]
 }
