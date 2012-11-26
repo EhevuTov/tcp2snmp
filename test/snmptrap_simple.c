@@ -27,6 +27,8 @@ int main (int argc, char **argv) {
   char           *prognam;
   int             exitval = 0;
 
+  snmp_sess_init(&session);
+
   //session.version     = 2;
   session.version       = SNMP_VERSION_1;
   session.retries       = 2;
@@ -38,6 +40,9 @@ int main (int argc, char **argv) {
   session.community     = community;
   session.community_len = strlen(session.community);
 
+  // set debug tokens
+  debug_register_tokens("transport,tdomain,snmp_sess");
+  snmp_set_do_debugging(1);
   /* windows32 specific initialization (is a noop on unix) */
   SOCK_STARTUP;
   // open snmp session
@@ -48,9 +53,9 @@ int main (int argc, char **argv) {
     NULL, NULL);
   */
     if (!ss) {
-    snmp_perror("ack");
+    //snmp_perror("ack");
     snmp_sess_perror("snmptrap", &session);
-    snmp_log(LOG_DEBUG, "Session did not open\n");
+    //snmp_log(LOG_DEBUG, "Session did not open\n");
     exit(2);
   }
   snmp_log(LOG_DEBUG, "DEBUG OUTPUT");
@@ -58,9 +63,10 @@ int main (int argc, char **argv) {
   //pdu = snmp_pdu_create(1);
   pdu = snmp_pdu_create(SNMP_MSG_TRAP);
   if ( !pdu ) {
-      fprintf(stderr, "Failed to create trap PDU\n");
-      SOCK_CLEANUP;
-      exit(1);
+    fprintf(stderr, "Failed to create trap PDU\n");
+    snmp_perror("ack");
+    SOCK_CLEANUP;
+    exit(1);
   }
 
   // add variables to the PDU
