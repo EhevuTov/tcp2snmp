@@ -15,6 +15,7 @@ int main (int argc, char **argv) {
   oid             objid_sysdescr[] = { 1, 3, 6, 1, 2, 1, 1, 1, 0 };
   oid             objid_sysuptime[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
   oid             objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
+  oid             objid_mytrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 34, 0 };
   int             inform = 0;
 
   netsnmp_session session, *ss;
@@ -31,7 +32,8 @@ int main (int argc, char **argv) {
 
   session.version       = SNMP_VERSION_1;
   session.retries       = 2;
-  char address[]        = "192.168.1.174:162";
+  char address[]        = "localhost:162";
+  //char address[]        = "192.168.1.174:161";
   char *ptrAddress      = address;
   session.peername      = ptrAddress;
   u_char comm[]         = "public";
@@ -41,7 +43,8 @@ int main (int argc, char **argv) {
   session.community_len = strlen(session.community);
 
   // set debug tokens
-  debug_register_tokens("transport,tdomain,snmp_sess");
+  //debug_register_tokens("transport,tdomain,snmp_sess");
+  debug_register_tokens("all");
   snmp_set_do_debugging(1);
   /* windows32 specific initialization (is a noop on unix) */
   SOCK_STARTUP;
@@ -69,12 +72,27 @@ int main (int argc, char **argv) {
     exit(1);
   }
 
+  pdu->enterprise = (oid *) malloc(sizeof(objid_enterprise));
+  memcpy(pdu->enterprise, objid_enterprise, sizeof(objid_enterprise));
+  pdu->enterprise_length = sizeof(objid_enterprise) / sizeof(oid);
+
+  /*
+  pdu->specific_type = (oid *) malloc(sizeof(objid_snmptrap));
+  memcpy(pdu->specific_type, objid_snmptrap, sizeof(objid_snmptrap));
+  */
+  pdu->specific_type = 8;
+
+  /*
+  pdu->trap_type = (oid *) malloc(sizeof(objid_snmptrap));
+  memcpy(pdu->trap_type, objid_snmptrap, sizeof(objid_snmptrap));
+  //pdu->enterprise_length = sizeof(objid_enterprise) / sizeof(oid);
+  */
+  pdu->trap_type = 124;
+
   // add variables to the PDU
   // int snmp_add_var (netsnmp_pdu *pdu, const oid *name, 
   // size_t name_length, char type, const char *value)
-  char *value;
-  value = "42";
-  if(snmp_add_var(pdu, objid_sysdescr, OID_LENGTH(objid_sysdescr), 'i', "100")){
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', "100")){
     snmp_perror("add variable");
     SOCK_CLEANUP;
     exit(1);
