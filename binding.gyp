@@ -11,11 +11,13 @@
   ],
   'sources': [
     'async_tcp_server.cc',
+    'snmptrap.cc',
   ],
   'conditions': [
     ['OS=="mac"', {
       'include_dirs': [
         '/usr/local/include',
+        './',
       ],
       'libraries': [
         '-lboost_system-mt',

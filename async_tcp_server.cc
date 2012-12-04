@@ -2,8 +2,36 @@
 #include <iostream>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <net-snmp/net-snmp-config.h>
+#include <net-snmp/net-snmp-includes.h>
+#include <net-snmp/agent/net-snmp-agent-includes.h>
 
 using boost::asio::ip::tcp;
+
+class msg {
+  public:
+    msg();
+    msg(char* buff){
+      unpack(buff);
+      std::cout << "successful\n";
+    };
+  private:
+    int pack();
+    int unpack(char* buff){
+      printf("%s\n",buff);
+      return 1;
+    };
+};
+class pdu {
+  public:
+    pdu();
+    int send();
+    int close();
+
+  private:
+    int pack();
+    int unpack();
+};
 
 class session
 {
@@ -36,6 +64,8 @@ private:
           boost::asio::buffer(data_, bytes_transferred),
           boost::bind(&session::handle_write, this,
             boost::asio::placeholders::error));
+      //send_trap(data_);
+      std::cout << data_;
     }
     else
     {
@@ -107,6 +137,7 @@ void handler( const boost::system::error_code& error, int signal_number)
   {
     // A signal occurred.
     std::cout << "Signal Received" << std::endl;
+    exit(1); 
   }
 }
 
