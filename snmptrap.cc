@@ -1,18 +1,22 @@
+#include <iostream.h>
 #include <string.h>
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
+#include <boost/foreach.hpp>
 
 #include "snmptrap.h"
+#include "tlv.h"
 
-//int main (int argc, char **argv) {
-class trap
-{
- public:
-  trap(void);
-};
 
-trap::trap(void) {
+oid             objid_enterprise[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1 };
+oid             objid_sysdescr[] = { 1, 3, 6, 1, 2, 1, 1, 1, 0 };
+oid             objid_sysuptime[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
+oid             objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
+oid             objid_mytrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 34, 0 };
+int             inform = 0;
+
+trap::trap(char* data) {
   netsnmp_session session, *ss;
   netsnmp_pdu    *pdu, *response;
   oid             name[MAX_OID_LEN];
@@ -84,6 +88,12 @@ trap::trap(void) {
   // add variables to the PDU
   // int snmp_add_var (netsnmp_pdu *pdu, const oid *name, 
   // size_t name_length, char type, const char *value)
+  //if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', "100")){
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data)){
+    snmp_perror("add variable");
+    SOCK_CLEANUP;
+    exit(1);
+  };
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', "100")){
     snmp_perror("add variable");
     SOCK_CLEANUP;
