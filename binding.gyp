@@ -12,6 +12,7 @@
   'sources': [
     'async_tcp_server.cc',
     'snmptrap.cc',
+    'tlv.cc',
   ],
   'conditions': [
     ['OS=="mac"', {
