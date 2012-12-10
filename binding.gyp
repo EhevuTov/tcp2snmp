@@ -52,6 +52,23 @@
         '/usr/local/lib',
       ],
     }
+    ],
+    ['OS=="windows"', {
+      'include_dirs': [
+        '/usr/local/include',
+      ],
+      'libraries': [
+        '-lboost_system',
+        '-lnetsnmp',
+        '-lnetsnmpagent',
+        '-lnetsnmphelpers',
+        '-lnetsnmpmibs',
+        '-lnetsnmptrapd',
+      ],
+      'library_dirs': [
+        '/usr/local/lib',
+      ],
+    }
     ]
   ],
   'test': 0,
