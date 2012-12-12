@@ -1,4 +1,4 @@
-#include <iostream.h>
+#include <iostream>
 #include <string.h>
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
@@ -8,6 +8,7 @@
 #include "snmptrap.h"
 #include "tlv.h"
 
+#define BOOST_LIB_DIAGNOSTIC
 
 oid             objid_enterprise[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1 };
 oid             objid_sysdescr[] = { 1, 3, 6, 1, 2, 1, 1, 1, 0 };
