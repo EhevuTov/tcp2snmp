@@ -6,7 +6,7 @@
 #include <boost/foreach.hpp>
 
 #include "snmptrap.h"
-#include "tlv.h"
+//#include "elem.h"
 
 
 oid             objid_enterprise[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1 };
@@ -17,6 +17,10 @@ oid             objid_mytrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 34, 0 };
 int             inform = 0;
 
 trap::trap(char* data) {
+  //tlv tlv = new tlv(data);
+  //create list of tlv values
+  //tlv.list
+  //BOOST_FOREACH(elem e, tlv.list){};
   netsnmp_session session, *ss;
   netsnmp_pdu    *pdu, *response;
   oid             name[MAX_OID_LEN];
@@ -88,13 +92,52 @@ trap::trap(char* data) {
   // add variables to the PDU
   // int snmp_add_var (netsnmp_pdu *pdu, const oid *name, 
   // size_t name_length, char type, const char *value)
-  //if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', "100")){
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data)){
+
+  // make singature string compare
+  // Event Type: 0=Clear, 1=Minor, 2=Major, 3=NoData
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+6)){
     snmp_perror("add variable");
     SOCK_CLEANUP;
     exit(1);
   };
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', "100")){
+  // TeknoID
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+8)){
+    snmp_perror("add variable");
+    SOCK_CLEANUP;
+    exit(1);
+  };
+  // LinkSet
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+14)){
+    snmp_perror("add variable");
+    SOCK_CLEANUP;
+    exit(1);
+  };
+  // LinkQualifier
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+32)){
+    snmp_perror("add variable");
+    SOCK_CLEANUP;
+    exit(1);
+  };
+  // Originating CLLI
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+88)){
+    snmp_perror("add variable");
+    SOCK_CLEANUP;
+    exit(1);
+  };
+  // Destination CLLI
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+106)){
+    snmp_perror("add variable");
+    SOCK_CLEANUP;
+    exit(1);
+  };
+  // Threshold Percent
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+124)){
+    snmp_perror("add variable");
+    SOCK_CLEANUP;
+    exit(1);
+  };
+  // Occupancy Percent
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+128)){
     snmp_perror("add variable");
     SOCK_CLEANUP;
     exit(1);
