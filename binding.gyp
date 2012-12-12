@@ -3,7 +3,7 @@
 {
   'target_name': 'async',
   'type': 'executable',
-  'cflags_cc!': [ '-fno-rtti' ],
+  'cflags_cc!': [ '-fno-rtti','-fexceptions' ],
   'defines': [
     'NDEBUG',
     'USE_THREADS',
