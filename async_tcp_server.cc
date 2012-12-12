@@ -5,6 +5,7 @@
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
+#include "snmptrap.h"
 
 using boost::asio::ip::tcp;
 
@@ -60,12 +61,8 @@ private:
   {
     if (!error)
     {
-      boost::asio::async_write(socket_,
-          boost::asio::buffer(data_, bytes_transferred),
-          boost::bind(&session::handle_write, this,
-            boost::asio::placeholders::error));
-      //send_trap(data_);
-      std::cout << data_;
+      boost::asio::buffer(data_, bytes_transferred);
+      trap trap(data_);
     }
     else
     {
@@ -108,8 +105,8 @@ private:
   {
     session* new_session = new session(io_service_);
     acceptor_.async_accept(new_session->socket(),
-        boost::bind(&server::handle_accept, this, new_session,
-          boost::asio::placeholders::error));
+      boost::bind(&server::handle_accept, this, new_session,
+        boost::asio::placeholders::error));
   }
 
   void handle_accept(session* new_session,
@@ -137,7 +134,7 @@ void handler( const boost::system::error_code& error, int signal_number)
   {
     // A signal occurred.
     std::cout << "Signal Received" << std::endl;
-    exit(1); 
+    exit(0); 
   }
 }
 
