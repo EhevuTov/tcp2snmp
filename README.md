@@ -10,8 +10,7 @@ outputs snmp trap events
   - Net-SNMP
 
 # Todo
+  - add correct MIB OIDs 
+  - add Windows service
   - add configuration file
   - add libs for Windows
-  - compile for windows
-  - add Windows service
-  - add -fno_rtti for gcc make formats
