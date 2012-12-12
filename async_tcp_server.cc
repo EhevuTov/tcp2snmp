@@ -137,7 +137,7 @@ void handler( const boost::system::error_code& error, int signal_number)
   {
     // A signal occurred.
     std::cout << "Signal Received" << std::endl;
-    exit(1); 
+    exit(0); 
   }
 }
 
