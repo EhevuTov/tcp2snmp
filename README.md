@@ -10,6 +10,7 @@ outputs snmp trap events
   - Net-SNMP
 
 # Todo
+  - add check for SNMP signature
   - add correct MIB OIDs 
   - add Windows service
   - add configuration file
