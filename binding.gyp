@@ -4,6 +4,7 @@
   'target_name': 'async',
   'type': 'executable',
   'cflags_cc!': [ '-fno-rtti','-fexceptions' ],
+  'cflags_cc+': ['-frtti', '-fexceptions'],
   'defines': [
     'NDEBUG',
     'USE_THREADS',
@@ -32,11 +33,12 @@
         '/usr/local/lib',
       ],
       'xcode_settings': {
-        'GCC_ENABLE_CPP_RTTI': 'YES'
+        'GCC_ENABLE_CPP_RTTI': 'YES',
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       }
     }
     ],
-    ['OS=="freebsd"', {
+    ['OS=="linux" or OS=="freebsd"', {
       'include_dirs': [
         '/usr/local/include',
       ],
@@ -53,7 +55,7 @@
       ],
     }
     ],
-    ['OS=="windows"', {
+    ['OS=="win"', {
       'include_dirs': [
         '/usr/local/include',
       ],
@@ -95,7 +97,7 @@
       }
     }
     ],
-    ['OS=="freebsd"', {
+    ['OS=="linux" or OS=="freebsd"', {
       'include_dirs': [
         '/usr/local/include',
       ],
@@ -137,7 +139,7 @@
       }
     }
     ],
-    ['OS=="freebsd"', {
+    ['OS=="linux" or OS=="freebsd"', {
       'include_dirs': [
         '/usr/local/include',
       ],
