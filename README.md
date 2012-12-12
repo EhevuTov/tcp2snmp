@@ -10,7 +10,8 @@ outputs snmp trap events
   - Net-SNMP
 
 # Todo
-  - add libs for OS X
-  - add libs for FreeBSD
+  - add configuration file
   - add libs for Windows
+  - compile for windows
+  - add Windows service
   - add -fno_rtti for gcc make formats

@@ -11,11 +11,14 @@
   ],
   'sources': [
     'async_tcp_server.cc',
+    'snmptrap.cc',
+    'tlv.cc',
   ],
   'conditions': [
     ['OS=="mac"', {
       'include_dirs': [
         '/usr/local/include',
+        './',
       ],
       'libraries': [
         '-lboost_system-mt',
@@ -34,6 +37,23 @@
     }
     ],
     ['OS=="freebsd"', {
+      'include_dirs': [
+        '/usr/local/include',
+      ],
+      'libraries': [
+        '-lboost_system',
+        '-lnetsnmp',
+        '-lnetsnmpagent',
+        '-lnetsnmphelpers',
+        '-lnetsnmpmibs',
+        '-lnetsnmptrapd',
+      ],
+      'library_dirs': [
+        '/usr/local/lib',
+      ],
+    }
+    ],
+    ['OS=="windows"', {
       'include_dirs': [
         '/usr/local/include',
       ],

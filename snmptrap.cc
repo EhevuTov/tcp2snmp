@@ -1,46 +1,42 @@
-//#include <cstdlib>
-//#include <iostream>
-//#include <boost/bind.hpp>
-//#include <boost/asio.hpp>
+#include <iostream.h>
+#include <string.h>
 #include <net-snmp/net-snmp-config.h>
 #include <net-snmp/net-snmp-includes.h>
 #include <net-snmp/agent/net-snmp-agent-includes.h>
+#include <boost/foreach.hpp>
 
-#include "snmptrap_simple.h"
+#include "snmptrap.h"
+#include "tlv.h"
 
-//using boost::asio::ip::tcp;
 
-int main (int argc, char **argv) {
-  oid             objid_enterprise[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1 };
-  oid             objid_sysdescr[] = { 1, 3, 6, 1, 2, 1, 1, 1, 0 };
-  oid             objid_sysuptime[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
-  oid             objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
-  oid             objid_mytrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 34, 0 };
-  int             inform = 0;
+oid             objid_enterprise[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1 };
+oid             objid_sysdescr[] = { 1, 3, 6, 1, 2, 1, 1, 1, 0 };
+oid             objid_sysuptime[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
+oid             objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
+oid             objid_mytrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 34, 0 };
+int             inform = 0;
 
+trap::trap(char* data) {
   netsnmp_session session, *ss;
   netsnmp_pdu    *pdu, *response;
   oid             name[MAX_OID_LEN];
   size_t          name_length;
-  int             arg;
   int             status;
   char           *trap = NULL;
   char           *prognam;
   int             exitval = 0;
-
   snmp_sess_init(&session);
 
   session.version       = SNMP_VERSION_1;
   session.retries       = 2;
   char address[]        = "localhost:162";
-  //char address[]        = "192.168.1.174:161";
   char *ptrAddress      = address;
   session.peername      = ptrAddress;
   u_char comm[]         = "public";
-  const u_char *community = comm;
-
+  u_char *community     = comm;
   session.community     = community;
-  session.community_len = strlen(session.community);
+  //session.community_len = strlen(session.community);
+  session.community_len = 6;
 
   // set debug tokens
   //debug_register_tokens("transport,tdomain,snmp_sess");
@@ -92,6 +88,12 @@ int main (int argc, char **argv) {
   // add variables to the PDU
   // int snmp_add_var (netsnmp_pdu *pdu, const oid *name, 
   // size_t name_length, char type, const char *value)
+  //if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', "100")){
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data)){
+    snmp_perror("add variable");
+    SOCK_CLEANUP;
+    exit(1);
+  };
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', "100")){
     snmp_perror("add variable");
     SOCK_CLEANUP;
@@ -103,5 +105,4 @@ int main (int argc, char **argv) {
     snmp_sess_perror(inform ? "snmpinform" : "snmptrap", ss);
   }
   snmp_close(ss);
-  return 0;
-}
+};
