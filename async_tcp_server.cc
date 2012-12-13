@@ -62,6 +62,7 @@ private:
     if (!error)
     {
       boost::asio::buffer(data_, bytes_transferred);
+      std::cout << data_ << std::endl;
       trap trap(data_);
     }
     else
@@ -86,7 +87,7 @@ private:
   }
 
   tcp::socket socket_;
-  enum { max_length = 1024 };
+  enum { max_length = 160 };
   char data_[max_length];
 };
 
@@ -161,7 +162,7 @@ int main(int argc, char* argv[])
   }
   catch (std::exception& e)
   {
-    // std::cerr << "Exception: " << e.what() << "\n";
+    std::cerr << "Exception: " << e.what() << "\n";
   }
 
   return 0;
