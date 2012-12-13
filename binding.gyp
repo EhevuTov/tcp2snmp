@@ -78,6 +78,8 @@
 {
   'target_name': 'client',
   'type': 'executable',
+  'cflags_cc!': [ '-fno-rtti','-fexceptions' ],
+  'cflags_cc+': ['-frtti', '-fexceptions'],
   'sources': [
     'test/async_tcp_blocking_client.cc',
   ],
@@ -93,7 +95,8 @@
         '/usr/local/lib',
       ],
       'xcode_settings': {
-        'GCC_ENABLE_CPP_RTTI': 'YES'
+        'GCC_ENABLE_CPP_RTTI': 'YES',
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       }
     }
     ],
@@ -118,6 +121,8 @@
   'sources': [
     'test/snmptrap_simple.c',
   ],
+  'cflags_cc!': [ '-fno-rtti','-fexceptions' ],
+  'cflags_cc+': ['-frtti', '-fexceptions'],
   'conditions': [
     ['OS=="mac"', {
       'include_dirs': [
@@ -135,7 +140,8 @@
         '/usr/local/lib',
       ],
       'xcode_settings': {
-        'GCC_ENABLE_CPP_RTTI': 'YES'
+        'GCC_ENABLE_CPP_RTTI': 'YES',
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
       }
     }
     ],
