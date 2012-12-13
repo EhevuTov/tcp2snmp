@@ -10,7 +10,18 @@
 
 #define BOOST_LIB_DIAGNOSTIC
 
-oid             objid_enterprise[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1 };
+#define ENTERPRISE 1, 3, 6, 1, 4, 1, 3, 1, 1
+#define OID_EVENT 1
+oid             objid_event[] = { ENTERPRISE };
+#define OID_TEKNOID 2
+#define OID_LINKSET 3
+#define OID_LINKQUALIFIER 4
+#define OID_ORIGINCLLI 5
+#define OID_DESTINCLLI 6
+#define OID_THRESHOLD 7
+#define OID_OCCUPANCT 8
+
+oid             objid_enterprise[] = { ENTERPRISE };
 oid             objid_sysdescr[] = { 1, 3, 6, 1, 2, 1, 1, 1, 0 };
 oid             objid_sysuptime[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
 oid             objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
@@ -96,50 +107,65 @@ trap::trap(char* data) {
 
   // make singature string compare
   // Event Type: 0=Clear, 1=Minor, 2=Major, 3=NoData
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+6)){
-    snmp_perror("add variable");
+  if(snmp_add_var(pdu, objid_event, OID_LENGTH(objid_event), 'i', data+6)){
+    snmp_perror("add variable1");
+    snmp_perror(data+6);
     SOCK_CLEANUP;
     exit(1);
   };
   // TeknoID
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+8)){
-    snmp_perror("add variable");
+    snmp_perror("add variable2");
+    snmp_perror(data+8);
     SOCK_CLEANUP;
     exit(1);
   };
   // LinkSet
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+14)){
-    snmp_perror("add variable");
+    snmp_perror("add variable3");
+    snmp_perror(data+14);
     SOCK_CLEANUP;
     exit(1);
   };
   // LinkQualifier
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+32)){
-    snmp_perror("add variable");
+    snmp_perror("add variable4");
+    snmp_perror(data+32);
     SOCK_CLEANUP;
     exit(1);
   };
   // Originating CLLI
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+88)){
-    snmp_perror("add variable");
+    snmp_perror("add variable5");
+    snmp_perror(data+88);
     SOCK_CLEANUP;
     exit(1);
   };
   // Destination CLLI
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+106)){
-    snmp_perror("add variable");
+    snmp_perror("add variable6");
+    snmp_perror(data+106);
     SOCK_CLEANUP;
     exit(1);
   };
   // Threshold Percent
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+124)){
-    snmp_perror("add variable");
+    snmp_perror("add variable7");
+    snmp_perror(data+124);
     SOCK_CLEANUP;
     exit(1);
   };
   // Occupancy Percent
   if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+128)){
-    snmp_perror("add variable");
+    snmp_perror("add variable8");
+    snmp_perror(data+128);
+    SOCK_CLEANUP;
+    exit(1);
+  };
+  // Link Direction: 0=To, 1=From
+  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+132)){
+    snmp_perror("add variable9");
+    snmp_perror(data+132);
     SOCK_CLEANUP;
     exit(1);
   };
