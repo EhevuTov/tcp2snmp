@@ -7,32 +7,8 @@
 #include <net-snmp/agent/net-snmp-agent-includes.h>
 #include "snmptrap.h"
 
+
 using boost::asio::ip::tcp;
-
-class msg {
-  public:
-    msg();
-    msg(char* buff){
-      unpack(buff);
-      std::cout << "successful\n";
-    };
-  private:
-    int pack();
-    int unpack(char* buff){
-      printf("%s\n",buff);
-      return 1;
-    };
-};
-class pdu {
-  public:
-    pdu();
-    int send();
-    int close();
-
-  private:
-    int pack();
-    int unpack();
-};
 
 class session
 {
