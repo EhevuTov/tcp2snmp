@@ -117,29 +117,32 @@ void handler( const boost::system::error_code& error, int signal_number)
 
 int main(int argc, char* argv[])
 {
-  try
-  {
-    if (argc != 2)
+  int myError = 1;
+  while(myError) {
+    try
     {
-      std::cerr << "Usage: async_tcp_echo_server <port>\n";
-      return 1;
+      if (argc != 2)
+      {
+        std::cerr << "Usage: async_tcp_echo_server <port>\n";
+        return 1;
+      }
+
+      boost::asio::io_service io_service;
+      // Construct a signal set registered for process termination.
+      boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
+      // Start an asynchronous wait for one of the signals to occur.
+      signals.async_wait(handler);
+
+      using namespace std; // For atoi.
+      server s(io_service, atoi(argv[1]));
+
+      io_service.run();
     }
-
-    boost::asio::io_service io_service;
-    // Construct a signal set registered for process termination.
-    boost::asio::signal_set signals(io_service, SIGINT, SIGTERM);
-    // Start an asynchronous wait for one of the signals to occur.
-    signals.async_wait(handler);
-
-    using namespace std; // For atoi.
-    server s(io_service, atoi(argv[1]));
-
-    io_service.run();
+    catch (std::exception& e)
+    {
+      std::cerr << "Exception: " << e.what() << "\n";
+    }
+    myError = 0;
   }
-  catch (std::exception& e)
-  {
-    std::cerr << "Exception: " << e.what() << "\n";
-  }
-
   return 0;
 }
