@@ -6,12 +6,12 @@
 #include <boost/foreach.hpp>
 
 #include "snmptrap.h"
-//#include "elem.h"
 
 #define BOOST_LIB_DIAGNOSTIC
 
-#define ENTERPRISE 1, 3, 6, 1, 4, 1, 3, 1, 1
-#define OID_EVENT 1
+#define ENTERPRISE 1, 3, 6, 1, 4, 1, 3, 1, 36872
+#define SUFFIX 1, 1
+#define OID_EVENT ENTERPRISE ## 1
 oid             objid_event[] = { ENTERPRISE };
 #define OID_TEKNOID 2
 #define OID_LINKSET 3
@@ -19,13 +19,18 @@ oid             objid_event[] = { ENTERPRISE };
 #define OID_ORIGINCLLI 5
 #define OID_DESTINCLLI 6
 #define OID_THRESHOLD 7
-#define OID_OCCUPANCT 8
+#define OID_OCCUPANCY 8
 
 oid             objid_enterprise[] = { ENTERPRISE };
-oid             objid_sysdescr[] = { 1, 3, 6, 1, 2, 1, 1, 1, 0 };
-oid             objid_sysuptime[] = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
-oid             objid_snmptrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
-oid             objid_mytrap[] = { 1, 3, 6, 1, 6, 3, 1, 1, 34, 0 };
+oid             objid_trap1[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 1 };
+oid             objid_trap2[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 2 };
+oid             objid_trap3[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 3 };
+oid             objid_trap4[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 4 };
+oid             objid_trap5[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 5 };
+oid             objid_trap6[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 6 };
+oid             objid_trap7[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 7 };
+oid             objid_trap8[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 8 };
+oid             objid_trap9[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 9 };
 int             inform = 0;
 
 trap::trap(char* data) {
@@ -34,18 +39,16 @@ trap::trap(char* data) {
   //tlv.list
   //BOOST_FOREACH(elem e, tlv.list){};
   netsnmp_session session, *ss;
-  netsnmp_pdu    *pdu, *response;
+  netsnmp_pdu    *pdu;
   oid             name[MAX_OID_LEN];
   size_t          name_length;
   int             status;
-  char           *trap = NULL;
-  char           *prognam;
   int             exitval = 0;
   snmp_sess_init(&session);
 
   session.version       = SNMP_VERSION_1;
   session.retries       = 2;
-  char address[]        = "localhost:162";
+  char address[]        = "192.168.1.174:162";
   char *ptrAddress      = address;
   session.peername      = ptrAddress;
   u_char comm[]         = "public";
@@ -107,63 +110,63 @@ trap::trap(char* data) {
 
   // make singature string compare
   // Event Type: 0=Clear, 1=Minor, 2=Major, 3=NoData
-  if(snmp_add_var(pdu, objid_event, OID_LENGTH(objid_event), 'i', data+6)){
+  if(snmp_add_var(pdu, objid_trap1, OID_LENGTH(objid_trap1), 'i', data+6)){
     snmp_perror("add variable1");
     snmp_perror(data+6);
     SOCK_CLEANUP;
     exit(1);
   };
   // TeknoID
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+8)){
+  if(snmp_add_var(pdu, objid_trap2, OID_LENGTH(objid_trap2), 'i', data+8)){
     snmp_perror("add variable2");
     snmp_perror(data+8);
     SOCK_CLEANUP;
     exit(1);
   };
   // LinkSet
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+14)){
+  if(snmp_add_var(pdu, objid_trap3, OID_LENGTH(objid_trap3), 's', data+14)){
     snmp_perror("add variable3");
     snmp_perror(data+14);
     SOCK_CLEANUP;
     exit(1);
   };
   // LinkQualifier
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+32)){
+  if(snmp_add_var(pdu, objid_trap4, OID_LENGTH(objid_trap4), 's', data+32)){
     snmp_perror("add variable4");
     snmp_perror(data+32);
     SOCK_CLEANUP;
     exit(1);
   };
   // Originating CLLI
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+88)){
+  if(snmp_add_var(pdu, objid_trap5, OID_LENGTH(objid_trap5), 's', data+88)){
     snmp_perror("add variable5");
     snmp_perror(data+88);
     SOCK_CLEANUP;
     exit(1);
   };
   // Destination CLLI
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 's', data+106)){
+  if(snmp_add_var(pdu, objid_trap6, OID_LENGTH(objid_trap6), 's', data+106)){
     snmp_perror("add variable6");
     snmp_perror(data+106);
     SOCK_CLEANUP;
     exit(1);
   };
   // Threshold Percent
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+124)){
+  if(snmp_add_var(pdu, objid_trap7, OID_LENGTH(objid_trap7), 'i', data+124)){
     snmp_perror("add variable7");
     snmp_perror(data+124);
     SOCK_CLEANUP;
     exit(1);
   };
   // Occupancy Percent
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+128)){
+  if(snmp_add_var(pdu, objid_trap8, OID_LENGTH(objid_trap8), 'i', data+128)){
     snmp_perror("add variable8");
     snmp_perror(data+128);
     SOCK_CLEANUP;
     exit(1);
   };
   // Link Direction: 0=To, 1=From
-  if(snmp_add_var(pdu, objid_mytrap, OID_LENGTH(objid_mytrap), 'i', data+132)){
+  if(snmp_add_var(pdu, objid_trap9, OID_LENGTH(objid_trap9), 'i', data+132)){
     snmp_perror("add variable9");
     snmp_perror(data+132);
     SOCK_CLEANUP;
