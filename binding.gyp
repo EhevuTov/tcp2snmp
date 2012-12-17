@@ -3,8 +3,9 @@
 {
   'target_name': 'async',
   'type': 'executable',
-  'cflags_cc!': [ '-fno-rtti','-fexceptions' ],
   'cflags_cc+': ['-frtti', '-fexceptions'],
+      'cflags_cc+': ['-DNETSNMP_ENABLE_IPV6', '-fno-strict-aliasing', '-arch i386'],
+      'cflags_cc+': ['-g', '-O2', '-Udarwin12', '-Ddarwin12=darwin12'],
   'defines': [
     'NDEBUG',
     'USE_THREADS',
@@ -13,13 +14,16 @@
   'sources': [
     'async_tcp_server.cc',
     'snmptrap.cc',
-    'tlv.cc',
   ],
   'conditions': [
     ['OS=="mac"', {
+      'cflags_cc+': ['-frtti', '-fexceptions'],
+      'cflags_cc+': ['-DNETSNMP_ENABLE_IPV6', '-fno-strict-aliasing', '-arch i386'],
+      'cflags_cc+': ['-g', '-O2', '-Udarwin12', '-Ddarwin12=darwin12'],
       'include_dirs': [
-        '/usr/local/include',
         './',
+        '/usr/local/Cellar/net-snmp/5.7.1/include',
+        '/usr/local/include',
       ],
       'libraries': [
         '-lboost_system-mt',
@@ -34,7 +38,10 @@
       ],
       'xcode_settings': {
         'GCC_ENABLE_CPP_RTTI': 'YES',
-        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+        'OTHER_CFLAGS': [
+          '-arch i386',
+        ],
       }
     }
     ],
@@ -80,12 +87,18 @@
   'type': 'executable',
   'cflags_cc!': [ '-fno-rtti','-fexceptions' ],
   'cflags_cc+': ['-frtti', '-fexceptions'],
+      'cflags_cc+': ['-DNETSNMP_ENABLE_IPV6', '-fno-strict-aliasing', '-arch i386'],
+      'cflags_cc+': ['-g', '-O2', '-Udarwin12', '-Ddarwin12=darwin12'],
   'sources': [
     'test/async_tcp_blocking_client.cc',
   ],
   'conditions': [
     ['OS=="mac"', {
+      'cflags_cc+': ['-DNETSNMP_ENABLE_IPV6', '-fno-strict-aliasing', '-arch i386'],
+      'cflags_cc+': ['-g', '-O2', '-Udarwin12', '-Ddarwin12=darwin12'],
       'include_dirs': [
+        './',
+        '/usr/local/Cellar/net-snmp/5.7.1/include',
         '/usr/local/include',
       ],
       'libraries': [
@@ -96,7 +109,10 @@
       ],
       'xcode_settings': {
         'GCC_ENABLE_CPP_RTTI': 'YES',
-        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES'
+        'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
+        'OTHER_CFLAGS': [
+          '-arch i386',
+        ],
       }
     }
     ],
