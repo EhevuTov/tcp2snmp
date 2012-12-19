@@ -1,7 +1,7 @@
 {
   "targets": [
 {
-  'target_name': 'async',
+  'target_name': 'tcp2snmp',
   'type': 'executable',
   'cflags_cc+': ['-frtti', '-fexceptions'],
       'cflags_cc+': ['-DNETSNMP_ENABLE_IPV6', '-fno-strict-aliasing', '-arch i386'],
