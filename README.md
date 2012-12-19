@@ -11,6 +11,7 @@ outputs snmp trap events
 
 # Todo
   - add check for SNMP signature
+  - add IP address of receiving event to SNMP event
   - add correct MIB OIDs 
   - add Windows service
   - add configuration file
