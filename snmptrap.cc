@@ -1,181 +1,352 @@
-#include <iostream>
-#include <string.h>
-#include <net-snmp/net-snmp-config.h>
-#include <net-snmp/net-snmp-includes.h>
-#include <net-snmp/agent/net-snmp-agent-includes.h>
-#include <boost/foreach.hpp>
+// Tekno Telecom SNMP Trap
+// O.M. Created.  2010
 
+#include <stdio.h>
+#include "winsnmp.h"
+#include "time.h"
 #include "snmptrap.h"
 
-#define BOOST_LIB_DIAGNOSTIC
-
 #define ENTERPRISE 1, 3, 6, 1, 4, 1, 3, 1, 36872
-#define SUFFIX 1, 1
-#define OID_EVENT ENTERPRISE ## 1
-oid             objid_event[] = { ENTERPRISE };
-#define OID_TEKNOID 2
-#define OID_LINKSET 3
-#define OID_LINKQUALIFIER 4
-#define OID_ORIGINCLLI 5
-#define OID_DESTINCLLI 6
-#define OID_THRESHOLD 7
-#define OID_OCCUPANCY 8
-
 oid             objid_enterprise[] = { ENTERPRISE };
-oid             objid_trap1[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 1 };
-oid             objid_trap2[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 2 };
-oid             objid_trap3[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 3 };
-oid             objid_trap4[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 4 };
-oid             objid_trap5[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 5 };
-oid             objid_trap6[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 6 };
-oid             objid_trap7[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 7 };
-oid             objid_trap8[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 8 };
-oid             objid_trap9[] = { 1, 3, 6, 1, 4, 1, 3, 1, 1, 36872, 9 };
-int             inform = 0;
-
+// Stub callback function
+SNMPAPI_STATUS CALLBACK cbFunc(HSNMP_SESSION hSession, HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam, LPVOID lpClientData)
+{
+	return SNMPAPI_SUCCESS;
+}
 trap::trap(char* data) {
-  //tlv tlv = new tlv(data);
-  //create list of tlv values
-  //tlv.list
-  //BOOST_FOREACH(elem e, tlv.list){};
-  netsnmp_session session, *ss;
-  netsnmp_pdu    *pdu;
-  oid             name[MAX_OID_LEN];
-  size_t          name_length;
-  int             status;
-  int             exitval = 0;
-  snmp_sess_init(&session);
+extern "C"
+{
+	char			TargetIp[15];
+	char			TargetCommuity[100];
+	unsigned int	TargetPort = 162;
+	unsigned int	snmpSendPort = 162;	 // 162 is default
+	char			trapTargetIP[15];
+	char			Community[100];
+	int				SnmpReturnError = 1;					// -1 failed, 1 success
+	unsigned char	ContextBuffer[300];         
 
-  session.version       = SNMP_VERSION_1;
-  session.retries       = 2;
-  char address[]        = "192.168.1.174:162";
-  char *ptrAddress      = address;
-  session.peername      = ptrAddress;
-  u_char comm[]         = "public";
-  u_char *community     = comm;
-  session.community     = community;
-  //session.community_len = strlen(session.community);
-  session.community_len = 6;
 
-  // set debug tokens
-  //debug_register_tokens("transport,tdomain,snmp_sess");
-  debug_register_tokens("all");
-  snmp_set_do_debugging(1);
-  /* windows32 specific initialization (is a noop on unix) */
-  SOCK_STARTUP;
-  // open snmp session
-  ss = snmp_open(&session);
-  /*
-  ss = snmp_add(&session,
-    netsnmp_transport_open_client("snmptrap", session.peername),
-    NULL, NULL);
-  */
-    if (!ss) {
-    //snmp_perror("ack");
-    snmp_sess_perror("snmptrap", &session);
-    //snmp_log(LOG_DEBUG, "Session did not open\n");
-    exit(2);
+	HSNMP_SESSION hSession  = SNMPAPI_FAILURE;
+	HSNMP_ENTITY hDst       = SNMPAPI_FAILURE;
+	HSNMP_VBL hVbl          = SNMPAPI_FAILURE;
+	HSNMP_PDU hPdu          = SNMPAPI_FAILURE;
+	HSNMP_CONTEXT hContext  = SNMPAPI_FAILURE;
+    
+	SNMPAPI_CALLBACK cB = &cbFunc;
+
+	smiOCTETS dContext;					
+	smiINT32  id = 1;
+	smiUINT32 lStat;
+
+	smiUINT32 sysUpTime[]          = {1,3,6,1,2,1,1,3,0};
+	smiUINT32 snmpTrapOid[]        = {1,3,6,1,4,1,36872,1,0};
+	smiUINT32 trapValue[]          = {1,3,6,1,4,1,36872,1,0};
+	smiUINT32 snmpTrapEnterprise[] = {1,3,6,1,4,1,36872,1,0};
+
+
+	smiOID dSysUpTimeName   = {9, sysUpTime};
+	smiOID dTrapName        = {9, snmpTrapOid};
+	smiOID dEnterpriseName  = {9, snmpTrapEnterprise};
+
+	smiVALUE valSysUpTime;
+	smiVALUE valTrap;
+//	smiVALUE valEnterprise;
+
+	smiOID		dOID  = {9, snmpTrapEnterprise};
+	smiVALUE	valEvent;
+
+
+/* Get the target IP, Port and Community from Tekno connect.csv */
+__declspec(dllexport) int __stdcall TeknoSnmpInit(char TargetIp[15], int CharCount, unsigned int TargetPort, char TargetCommunity[100])
+{
+	memset(trapTargetIP,' ',15);
+	sprintf_s(Community,TargetCommunity);
+	snmpSendPort = TargetPort;
+	for ( int i = 0; i <CharCount; i++)
+		trapTargetIP[i] = TargetIp[i];
+
+	/*
+	sprintf(trapTargetIP, "127.0.0.1");  //  for debug only !!!
+	snmpSendPort = 26;					 //  for debug only !!!
+	sprintf(Community, "public");		 //  for debug only !!!
+	*/
+	return(snmpSendPort);
+}
+
+  void TeknoSnmpTrap_Looping(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
+  {
+	//===============================================
+	// Loop Alarm Record Structs as defined in Snmm.h
+	#define MaxDigBytes 10  
+	/*
+	 *  BCD digits structure
+	 */
+	typedef
+	struct { 
+		byte  flag;
+		byte  nature;
+		byte  status;
+		byte  numberplan;
+		byte  category;
+		byte  encoding;
+		byte  number[ MaxDigBytes ]; 
+	} numberset ;
+	//
+	typedef
+	struct _pointcode
+	{ byte netid,
+		netcluster,
+		netmember,
+		filler;      
+	} pointcode ;
+
+	typedef
+	struct {
+	unsigned __int32 Link             ; /* Link								  */
+	unsigned __int32 CorrelationSetId ; // Now Correlation Set Id
+	byte		Direction			  ; /* 0 Incoming, 1 Outgoing ???         */
+	unsigned int  	 ThresholdValue   ; /* Threshold count				  */
+
+	pointcode   MtpOPC			      ; /* MTP Originating Point Code   4     */
+	pointcode   MtpDPC			      ; /* MTP Destination Point Code   4     */
+	pointcode   STPPointCode          ; /* Local STP Point Code         4     */
+	pointcode   SPSTPPointCode        ; /* SP/STP Point Code            4     */
+
+	byte        SCCPcalledaddrind     ; /* called address ind                 */
+	byte        SCCPcalledSubsys      ; /* called subsystem num               */
+	pointcode   SCCPcalledPC          ; /* called point code                  */
+	byte        SCCPcalledTranstype   ; /* called translation                 */
+	numberset   SCCPcalledTitleAddr   ; /* called global title addr           */
+
+	byte        SCCPcallingaddrind    ; /* calling address ind                */
+	byte        SCCPcallingSubsys     ; /* calling subsystem num              */
+	pointcode   SCCPcallingPC         ; /* calling point code                 */
+	byte        SCCPcallingTranstype  ; /* calling translation                */
+	numberset   SCCPcallingTitleAddr  ; /* calling global title               */
+
+	byte		TranIdOrig[4] 		  ; /* transaction ID originating		  */
+	byte		TranIdDest[4]		  ; /* transaction ID destination		  */
+	unsigned int		OpCode;
+	} LoopAlarmRecord;
+
+	LoopAlarmRecord LAR;
+
+	memcpy(&LAR, TextBuffer, sizeof(LAR)); 
+
+	// Link
+	snmpTrapEnterprise[8] = 2;        // 
+	valEvent.syntax = SNMP_SYNTAX_INT;
+	valEvent.value.uNumber = LAR.Link;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	//CorrelationSetId
+	snmpTrapEnterprise[8] = 3;        // 
+	valEvent.syntax = SNMP_SYNTAX_INT;
+	valEvent.value.uNumber = LAR.CorrelationSetId;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Direction
+	snmpTrapEnterprise[8] = 4;        // 
+	valEvent.syntax = SNMP_SYNTAX_INT;
+	valEvent.value.uNumber = LAR.Direction;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// ThresholdValue
+	snmpTrapEnterprise[8] = 5;        // 
+	valEvent.syntax = SNMP_SYNTAX_INT;
+	valEvent.value.uNumber = LAR.ThresholdValue;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// MtpOPC
+	snmpTrapEnterprise[8] = 6;        // 
+	valEvent.syntax = SNMP_SYNTAX_UNSIGNED32;
+	valEvent.value.uNumber = (LAR.MtpOPC.netid << 24) + (LAR.MtpOPC.netcluster << 16) + (LAR.MtpOPC.netmember << 8) + LAR.MtpOPC.filler;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// MtpDPC
+	snmpTrapEnterprise[8] = 7;        // 
+	valEvent.syntax = SNMP_SYNTAX_UNSIGNED32;
+	valEvent.value.uNumber = (LAR.MtpDPC.netid << 24) + (LAR.MtpDPC.netcluster << 16) + (LAR.MtpDPC.netmember << 8) + LAR.MtpDPC.filler;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
   }
-  //snmp_log(LOG_DEBUG, "DEBUG OUTPUT");
-  // create the PDU
-  //pdu = snmp_pdu_create(1);
-  pdu = snmp_pdu_create(SNMP_MSG_TRAP);
-  if ( !pdu ) {
-    fprintf(stderr, "Failed to create trap PDU\n");
-    snmp_perror("pdu error");
-    SOCK_CLEANUP;
-    exit(1);
+
+  //-----------------------------------------------------------------------------------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------------------------------------------------------------------------------
+
+  void TeknoSnmpTrap_ILM(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
+  {
+	// Event ID
+	snmpTrapEnterprise[8] = 2;
+	valEvent.syntax =SNMP_SYNTAX_INT32;
+	valEvent.value.uNumber = EventID;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// SSG ID, 8 octets - set to NULL
+	snmpTrapEnterprise[8] = 3;
+	for (int i=0; i<8; i++) ContextBuffer[i] = NULL;
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = 8;
+	valEvent.value.string.ptr = &ContextBuffer[0];
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Adjucnt device ID
+	snmpTrapEnterprise[8] = 4;
+	valEvent.syntax = SNMP_SYNTAX_INT32;
+	valEvent.value.uNumber = 0;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Version - fixed at 1
+	snmpTrapEnterprise[8] = 5;
+	ContextBuffer[0] = '1';	ContextBuffer[1] = NULL;
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = 1;
+	valEvent.value.string.ptr = &ContextBuffer[0];
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// SSG Class - fixed at 1
+	snmpTrapEnterprise[8] = 6;
+	ContextBuffer[0] = '1';	ContextBuffer[1] = NULL;
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = 1;
+	valEvent.value.string.ptr = &ContextBuffer[0];
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Adjunct Device ID 
+	snmpTrapEnterprise[8] = 7;
+	ContextBuffer[0] = '0';	ContextBuffer[1] = NULL;
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = 1;
+	valEvent.value.string.ptr = &ContextBuffer[0];
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Link ID
+	snmpTrapEnterprise[8] = 8;
+	valEvent.syntax =SNMP_SYNTAX_INT32;
+	valEvent.value.uNumber = LinkID;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Processor ID
+	snmpTrapEnterprise[8] = 9;
+	valEvent.syntax =SNMP_SYNTAX_INT32;
+	valEvent.value.uNumber = ProcessorID;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Port ID
+	snmpTrapEnterprise[8] = 10;
+	valEvent.syntax =SNMP_SYNTAX_INT32;
+	valEvent.value.uNumber = PortID;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Direction - fixed at 0
+	snmpTrapEnterprise[8] = 11;
+	valEvent.syntax =SNMP_SYNTAX_INT32;
+	valEvent.value.uNumber = 0;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Message Type
+	snmpTrapEnterprise[8] = 12;
+	valEvent.syntax =SNMP_SYNTAX_INT32;
+	valEvent.value.uNumber = MessageType;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Alarm string
+	snmpTrapEnterprise[8] = 13;
+	valEvent.value.string.len = TextLength;
+	valEvent.value.string.ptr = (unsigned char*)&TextBuffer[0];
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
   }
 
-  pdu->enterprise = (oid *) malloc(sizeof(objid_enterprise));
-  memcpy(pdu->enterprise, objid_enterprise, sizeof(objid_enterprise));
-  pdu->enterprise_length = sizeof(objid_enterprise) / sizeof(oid);
 
-  /*
-  pdu->specific_type = (oid *) malloc(sizeof(objid_snmptrap));
-  memcpy(pdu->specific_type, objid_snmptrap, sizeof(objid_snmptrap));
-  */
-  pdu->specific_type = 8;
+// Called from TeknoSnmp.cs  
+  __declspec(dllexport) int __stdcall TeknoSnmpTrap(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
+  {
+	lStat = SnmpStartup(&lStat, &lStat, &lStat, &lStat, &lStat);
+	if (lStat == SNMPAPI_FAILURE)
+		return -1;
+		
+	hSession = SnmpCreateSession(NULL, 0, cB, NULL);
+	if (hSession == SNMPAPI_FAILURE)
+		return -1;
 
-  /*
-  pdu->trap_type = (oid *) malloc(sizeof(objid_snmptrap));
-  memcpy(pdu->trap_type, objid_snmptrap, sizeof(objid_snmptrap));
-  //pdu->enterprise_length = sizeof(objid_enterprise) / sizeof(oid);
-  */
-  pdu->trap_type = 124;
+	lStat = SnmpSetTranslateMode(SNMPAPI_UNTRANSLATED_V2);
+	hDst = SnmpStrToEntity(hSession, trapTargetIP);
+	lStat = SnmpSetPort(hDst, snmpSendPort);
 
-  // add variables to the PDU
-  // int snmp_add_var (netsnmp_pdu *pdu, const oid *name, 
-  // size_t name_length, char type, const char *value)
+	int length = sprintf_s( (char*)ContextBuffer,sizeof(ContextBuffer), Community) ;
+	dContext.ptr = &ContextBuffer[0];
+	dContext.len = length;
+	hContext = SnmpStrToContext(hSession, &dContext);
+	hVbl = SnmpCreateVbl(hSession, NULL, NULL);
 
-  // make singature string compare
-  // Event Type: 0=Clear, 1=Minor, 2=Major, 3=NoData
-  if(snmp_add_var(pdu, objid_trap1, OID_LENGTH(objid_trap1), 'i', data+6)){
-    snmp_perror("add variable1");
-    snmp_perror(data+6);
-    SOCK_CLEANUP;
-    exit(1);
-  };
-  // TeknoID
-  if(snmp_add_var(pdu, objid_trap2, OID_LENGTH(objid_trap2), 'i', data+8)){
-    snmp_perror("add variable2");
-    snmp_perror(data+8);
-    SOCK_CLEANUP;
-    exit(1);
-  };
-  // LinkSet
-  if(snmp_add_var(pdu, objid_trap3, OID_LENGTH(objid_trap3), 's', data+14)){
-    snmp_perror("add variable3");
-    snmp_perror(data+14);
-    SOCK_CLEANUP;
-    exit(1);
-  };
-  // LinkQualifier
-  if(snmp_add_var(pdu, objid_trap4, OID_LENGTH(objid_trap4), 's', data+32)){
-    snmp_perror("add variable4");
-    snmp_perror(data+32);
-    SOCK_CLEANUP;
-    exit(1);
-  };
-  // Originating CLLI
-  if(snmp_add_var(pdu, objid_trap5, OID_LENGTH(objid_trap5), 's', data+88)){
-    snmp_perror("add variable5");
-    snmp_perror(data+88);
-    SOCK_CLEANUP;
-    exit(1);
-  };
-  // Destination CLLI
-  if(snmp_add_var(pdu, objid_trap6, OID_LENGTH(objid_trap6), 's', data+106)){
-    snmp_perror("add variable6");
-    snmp_perror(data+106);
-    SOCK_CLEANUP;
-    exit(1);
-  };
-  // Threshold Percent
-  if(snmp_add_var(pdu, objid_trap7, OID_LENGTH(objid_trap7), 'i', data+124)){
-    snmp_perror("add variable7");
-    snmp_perror(data+124);
-    SOCK_CLEANUP;
-    exit(1);
-  };
-  // Occupancy Percent
-  if(snmp_add_var(pdu, objid_trap8, OID_LENGTH(objid_trap8), 'i', data+128)){
-    snmp_perror("add variable8");
-    snmp_perror(data+128);
-    SOCK_CLEANUP;
-    exit(1);
-  };
-  // Link Direction: 0=To, 1=From
-  if(snmp_add_var(pdu, objid_trap9, OID_LENGTH(objid_trap9), 'i', data+132)){
-    snmp_perror("add variable9");
-    snmp_perror(data+132);
-    SOCK_CLEANUP;
-    exit(1);
-  };
+	valSysUpTime.syntax = SNMP_SYNTAX_TIMETICKS;
+	valSysUpTime.value.uNumber = GetTickCount() / 10;
+	lStat = SnmpSetVb(hVbl, 0, &dSysUpTimeName, &valSysUpTime);
 
-  status = snmp_send(ss, pdu) == 0;
-  if (status) {
-    snmp_sess_perror(inform ? "snmpinform" : "snmptrap", ss);
+	valTrap.syntax = SNMP_SYNTAX_OID;
+	valTrap.value.oid.len = 8;
+	valTrap.value.oid.ptr = trapValue;
+	lStat = SnmpSetVb(hVbl, 0, &dTrapName, &valTrap);
+
+	/*
+	valEnterprise.syntax = SNMP_SYNTAX_OID;
+	valEnterprise.value.oid.len = 7;
+	valEnterprise.value.oid.ptr = enterpriseValue;
+	lStat = SnmpSetVb(hVbl, 0, &dEnterpriseName, &valEnterprise);
+	*/
+
+	// TimeStamp
+	snmpTrapEnterprise[8] = 1;
+	valEvent.syntax =SNMP_SYNTAX_TIMETICKS;
+	valEvent.value.uNumber = (long)time (NULL);
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	if (EventID == 9)
+		TeknoSnmpTrap_Looping(EventID, LinkID, ProcessorID, PortID, Direction, MessageType, TextBuffer, TextLength );
+	else
+		TeknoSnmpTrap_ILM(EventID, LinkID, ProcessorID, PortID, Direction, MessageType, TextBuffer, TextLength );
+
+	//lStat = SnmpCountVbl(hVbl);  // count of vb - not needed
+
+	hPdu = SnmpCreatePdu(hSession, SNMP_PDU_TRAP, 1, 0, 0, hVbl);
+	lStat = SnmpSetPduData(hPdu, NULL, &id, NULL, NULL, NULL);
+	lStat = SnmpSendMsg(hSession, NULL, hDst, hContext, hPdu);
+	if (lStat != SNMPAPI_SUCCESS)
+	{
+		//SNMPAPI_STATUS err = SnmpGetLastError(hSession);
+		SnmpReturnError = -1;
+	}
+
+	// Cleanup
+	if (hContext != SNMPAPI_FAILURE)
+	{
+		lStat = SnmpFreeContext(hContext);
+		hContext = SNMPAPI_FAILURE;
+	}
+	if (hDst != SNMPAPI_FAILURE)
+	{
+		lStat = SnmpFreeEntity(hDst);
+		hDst = SNMPAPI_FAILURE;
+	}
+	if (hPdu != SNMPAPI_FAILURE)
+	{
+		lStat = SnmpFreePdu(hPdu);
+		hPdu = SNMPAPI_FAILURE;
+	}
+	if (hVbl != SNMPAPI_FAILURE)
+	{
+		lStat = SnmpFreeVbl(hVbl);
+		hVbl = SNMPAPI_FAILURE;
+	}
+	if (hSession != SNMPAPI_FAILURE)
+	{
+		lStat = SnmpClose(hSession);
+		hSession = SNMPAPI_FAILURE;
+	}
+	lStat = SnmpCleanup();
+
+	return(SnmpReturnError);
   }
-  snmp_close(ss);
-};
+
+}
+}
