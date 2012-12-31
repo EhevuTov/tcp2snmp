@@ -19,14 +19,14 @@ class trap {
 
 	SNMPAPI_CALLBACK cB;
 
-	smiOCTETS dContext;					
+	smiOCTETS dContext;
 	smiINT32  id;
 	smiUINT32 lStat;
 
-	const smiUINT32 sysUpTime[9];
-	const smiUINT32 snmpTrapOid[9]  = {1,3,6,1,4,1,36872,1,0};
-  smiUINT32 trapValue[9]          = {1,3,6,1,4,1,36872,1,0};
-	smiUINT32 snmpTrapEnterprise[9] = {1,3,6,1,4,1,36872,1,0};
+	smiUINT32 sysUpTime[9];
+	smiUINT32 snmpTrapOid[9];
+    smiUINT32 trapValue[9];
+	smiUINT32 snmpTrapEnterprise[9];
 
 	smiOID dSysUpTimeName;
 	smiOID dTrapName;
@@ -34,12 +34,13 @@ class trap {
 
 	smiVALUE valSysUpTime;
 	smiVALUE valTrap;
+	smiVALUE valEvent;
 
 	void init();
 
   public:
-  trap(char* data);
-	trap(char* data, char TargetIp[15], char TargetCommunity[100], unsigned int	TargetPort,	unsigned int snmpSendPort, char trapTargetIP[15], char Community[100], int SnmpReturnError, unsigned char	ContextBuffer[300]);
-	int sendTrap(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength );
+  trap();
+	trap(char TargetIp[15], char TargetCommunity[100], unsigned int	TargetPort,	unsigned int snmpSendPort, char trapTargetIP[15], char Community[100], int SnmpReturnError, unsigned char	ContextBuffer[300]);
+	int sendTrap(char* data, unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength );
 
 };

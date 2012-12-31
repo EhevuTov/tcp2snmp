@@ -12,27 +12,40 @@ SNMPAPI_STATUS CALLBACK cbFunc(HSNMP_SESSION hSession, HWND hWnd, UINT wMsg, WPA
 {
 	return SNMPAPI_SUCCESS;
 }
-trap::trap(char* data) {
-	
-	TargetPort = 162;
-	snmpSendPort = 162;	 // 162 is default
-	SnmpReturnError = 1;					// -1 failed, 1 success     
-
-
-	hSession  = SNMPAPI_FAILURE;
-	hDst       = SNMPAPI_FAILURE;
-	hVbl          = SNMPAPI_FAILURE;
-	hPdu          = SNMPAPI_FAILURE;
-	hContext  = SNMPAPI_FAILURE;
+void trap::init() {
+	hSession		= SNMPAPI_FAILURE;
+	hDst			= SNMPAPI_FAILURE;
+	hVbl		    = SNMPAPI_FAILURE;
+	hPdu			= SNMPAPI_FAILURE;
+	hContext		= SNMPAPI_FAILURE;
     
 	cB = &cbFunc;
 				
 	id = 1;
 
-	sysUpTime          = {1,3,6,1,2,1,1,3,0};
-	snmpTrapOid[9]        = {1,3,6,1,4,1,36872,1,0};
-  smiUINT32 trapValue[9]          = {1,3,6,1,4,1,36872,1,0};
-	smiUINT32 snmpTrapEnterprise[9] = {1,3,6,1,4,1,36872,1,0};
+	sysUpTime[0] = 1;
+	sysUpTime[1] = 3;
+	sysUpTime[2] = 6;
+	sysUpTime[3] = 1;
+	sysUpTime[4] = 2;
+	sysUpTime[5] = 1;
+	sysUpTime[6] = 1;
+	sysUpTime[7] = 3;
+	sysUpTime[8] = 0;
+
+	snmpTrapOid[0]	= 1;
+	snmpTrapOid[1]	= 3;
+	snmpTrapOid[2]	= 6;
+	snmpTrapOid[3]	= 1;
+	snmpTrapOid[4]	= 4;
+	snmpTrapOid[5]  = 1;
+	snmpTrapOid[6]	= 36872;
+	snmpTrapOid[7]  = 1;
+	snmpTrapOid[8]  = 0;
+
+	// make copies for some reason
+	memcpy (snmpTrapOid, trapValue, sizeof (snmpTrapOid)) ;
+	memcpy (snmpTrapOid, snmpTrapEnterprise, sizeof(snmpTrapOid));
 
 	smiOID dSysUpTimeName   = {9, sysUpTime};
 	smiOID dTrapName        = {9, snmpTrapOid};
@@ -40,32 +53,23 @@ trap::trap(char* data) {
 
 	smiOID		dOID  = {9, snmpTrapEnterprise};
 	smiVALUE	valEvent;
+	TargetPort = 162;
+	snmpSendPort = 162;	 // 162 is default
+	SnmpReturnError = 1;					// -1 failed, 1 success     
+}
+
+trap::trap() {
+	init();
+
+
+
+
 
 	sprintf(trapTargetIP, "127.0.0.1");  //  for debug only !!!
 	snmpSendPort = 26;					 //  for debug only !!!
 	sprintf(Community, "public");		 //  for debug only !!!
 }
-trap::trap(char* data, char TargetIp[15], char TargetCommunity[100], unsigned int	TargetPort,	unsigned int snmpSendPort, char trapTargetIP[15], char Community[100], int SnmpReturnError, unsigned char	ContextBuffer[300]) {
-	
-	TargetPort = 162;
-	snmpSendPort = 162;	 // 162 is default
-	SnmpReturnError = 1;					// -1 failed, 1 success     
-
-
-	hSession  = SNMPAPI_FAILURE;
-	hDst       = SNMPAPI_FAILURE;
-	hVbl          = SNMPAPI_FAILURE;
-	hPdu          = SNMPAPI_FAILURE;
-	hContext  = SNMPAPI_FAILURE;
-    
-	cB = &cbFunc;
-				
-	id = 1;
-
-	sysUpTime          = {1,3,6,1,2,1,1,3,0};
-	snmpTrapOid[9]        = {1,3,6,1,4,1,36872,1,0};
-  smiUINT32 trapValue[9]          = {1,3,6,1,4,1,36872,1,0};
-	smiUINT32 snmpTrapEnterprise[9] = {1,3,6,1,4,1,36872,1,0};
+trap::trap(char TargetIp[15], char TargetCommunity[100], unsigned int TargetPort, unsigned int snmpSendPort, char trapTargetIP[15], char Community[100], int SnmpReturnError, unsigned char	ContextBuffer[300]) {
 
 	smiOID dSysUpTimeName   = {9, sysUpTime};
 	smiOID dTrapName        = {9, snmpTrapOid};
@@ -77,10 +81,12 @@ trap::trap(char* data, char TargetIp[15], char TargetCommunity[100], unsigned in
 	smiOID		dOID  = {9, snmpTrapEnterprise};
 	smiVALUE	valEvent;
 	memset(trapTargetIP,' ',15);
-	sprintf_s(Community,TargetCommunity);
+	sprintf(Community,TargetCommunity);
 	snmpSendPort = TargetPort;
-	for ( int i = 0; i <CharCount; i++)
+/*
+for ( int i = 0; i < CharCount; i++)
 		trapTargetIP[i] = TargetIp[i];
+*/
 }
 
   void TeknoSnmpTrap_Looping(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
@@ -269,7 +275,7 @@ trap::trap(char* data, char TargetIp[15], char TargetCommunity[100], unsigned in
 
 
 // Called from TeknoSnmp.cs  
-  int trap::sendTrap(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
+  int trap::sendTrap(char* data, unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
   {
 	lStat = SnmpStartup(&lStat, &lStat, &lStat, &lStat, &lStat);
 	if (lStat == SNMPAPI_FAILURE)
