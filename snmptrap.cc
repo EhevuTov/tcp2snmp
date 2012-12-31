@@ -7,70 +7,80 @@
 #include "snmptrap.h"
 
 #define ENTERPRISE 1, 3, 6, 1, 4, 1, 3, 1, 36872
-oid             objid_enterprise[] = { ENTERPRISE };
 // Stub callback function
 SNMPAPI_STATUS CALLBACK cbFunc(HSNMP_SESSION hSession, HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam, LPVOID lpClientData)
 {
 	return SNMPAPI_SUCCESS;
 }
 trap::trap(char* data) {
-extern "C"
-{
-	char			TargetIp[15];
-	char			TargetCommuity[100];
-	unsigned int	TargetPort = 162;
-	unsigned int	snmpSendPort = 162;	 // 162 is default
-	char			trapTargetIP[15];
-	char			Community[100];
-	int				SnmpReturnError = 1;					// -1 failed, 1 success
-	unsigned char	ContextBuffer[300];         
+	
+	TargetPort = 162;
+	snmpSendPort = 162;	 // 162 is default
+	SnmpReturnError = 1;					// -1 failed, 1 success     
 
 
-	HSNMP_SESSION hSession  = SNMPAPI_FAILURE;
-	HSNMP_ENTITY hDst       = SNMPAPI_FAILURE;
-	HSNMP_VBL hVbl          = SNMPAPI_FAILURE;
-	HSNMP_PDU hPdu          = SNMPAPI_FAILURE;
-	HSNMP_CONTEXT hContext  = SNMPAPI_FAILURE;
+	hSession  = SNMPAPI_FAILURE;
+	hDst       = SNMPAPI_FAILURE;
+	hVbl          = SNMPAPI_FAILURE;
+	hPdu          = SNMPAPI_FAILURE;
+	hContext  = SNMPAPI_FAILURE;
     
-	SNMPAPI_CALLBACK cB = &cbFunc;
+	cB = &cbFunc;
+				
+	id = 1;
 
-	smiOCTETS dContext;					
-	smiINT32  id = 1;
-	smiUINT32 lStat;
-
-	smiUINT32 sysUpTime[]          = {1,3,6,1,2,1,1,3,0};
-	smiUINT32 snmpTrapOid[]        = {1,3,6,1,4,1,36872,1,0};
-	smiUINT32 trapValue[]          = {1,3,6,1,4,1,36872,1,0};
-	smiUINT32 snmpTrapEnterprise[] = {1,3,6,1,4,1,36872,1,0};
-
+	sysUpTime          = {1,3,6,1,2,1,1,3,0};
+	snmpTrapOid[9]        = {1,3,6,1,4,1,36872,1,0};
+  smiUINT32 trapValue[9]          = {1,3,6,1,4,1,36872,1,0};
+	smiUINT32 snmpTrapEnterprise[9] = {1,3,6,1,4,1,36872,1,0};
 
 	smiOID dSysUpTimeName   = {9, sysUpTime};
 	smiOID dTrapName        = {9, snmpTrapOid};
 	smiOID dEnterpriseName  = {9, snmpTrapEnterprise};
 
-	smiVALUE valSysUpTime;
-	smiVALUE valTrap;
+	smiOID		dOID  = {9, snmpTrapEnterprise};
+	smiVALUE	valEvent;
+
+	sprintf(trapTargetIP, "127.0.0.1");  //  for debug only !!!
+	snmpSendPort = 26;					 //  for debug only !!!
+	sprintf(Community, "public");		 //  for debug only !!!
+}
+trap::trap(char* data, char TargetIp[15], char TargetCommunity[100], unsigned int	TargetPort,	unsigned int snmpSendPort, char trapTargetIP[15], char Community[100], int SnmpReturnError, unsigned char	ContextBuffer[300]) {
+	
+	TargetPort = 162;
+	snmpSendPort = 162;	 // 162 is default
+	SnmpReturnError = 1;					// -1 failed, 1 success     
+
+
+	hSession  = SNMPAPI_FAILURE;
+	hDst       = SNMPAPI_FAILURE;
+	hVbl          = SNMPAPI_FAILURE;
+	hPdu          = SNMPAPI_FAILURE;
+	hContext  = SNMPAPI_FAILURE;
+    
+	cB = &cbFunc;
+				
+	id = 1;
+
+	sysUpTime          = {1,3,6,1,2,1,1,3,0};
+	snmpTrapOid[9]        = {1,3,6,1,4,1,36872,1,0};
+  smiUINT32 trapValue[9]          = {1,3,6,1,4,1,36872,1,0};
+	smiUINT32 snmpTrapEnterprise[9] = {1,3,6,1,4,1,36872,1,0};
+
+	smiOID dSysUpTimeName   = {9, sysUpTime};
+	smiOID dTrapName        = {9, snmpTrapOid};
+	smiOID dEnterpriseName  = {9, snmpTrapEnterprise};
+
+
 //	smiVALUE valEnterprise;
 
 	smiOID		dOID  = {9, snmpTrapEnterprise};
 	smiVALUE	valEvent;
-
-
-/* Get the target IP, Port and Community from Tekno connect.csv */
-__declspec(dllexport) int __stdcall TeknoSnmpInit(char TargetIp[15], int CharCount, unsigned int TargetPort, char TargetCommunity[100])
-{
 	memset(trapTargetIP,' ',15);
 	sprintf_s(Community,TargetCommunity);
 	snmpSendPort = TargetPort;
 	for ( int i = 0; i <CharCount; i++)
 		trapTargetIP[i] = TargetIp[i];
-
-	/*
-	sprintf(trapTargetIP, "127.0.0.1");  //  for debug only !!!
-	snmpSendPort = 26;					 //  for debug only !!!
-	sprintf(Community, "public");		 //  for debug only !!!
-	*/
-	return(snmpSendPort);
 }
 
   void TeknoSnmpTrap_Looping(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
@@ -259,7 +269,7 @@ __declspec(dllexport) int __stdcall TeknoSnmpInit(char TargetIp[15], int CharCou
 
 
 // Called from TeknoSnmp.cs  
-  __declspec(dllexport) int __stdcall TeknoSnmpTrap(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
+  int trap::sendTrap(unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
   {
 	lStat = SnmpStartup(&lStat, &lStat, &lStat, &lStat, &lStat);
 	if (lStat == SNMPAPI_FAILURE)
@@ -348,5 +358,4 @@ __declspec(dllexport) int __stdcall TeknoSnmpInit(char TargetIp[15], int CharCou
 	return(SnmpReturnError);
   }
 
-}
 }
