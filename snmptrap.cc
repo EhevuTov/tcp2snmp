@@ -90,9 +90,8 @@ for ( int i = 0; i < CharCount; i++)
 */
 }
 
-  void trap::pduPackAdmin(char *d)
+  void trap::pduPackAdmin(trap::pdu* data)
   {
-	pdu *data = (pdu*) d;
 	//===============================================
 	// Loop Alarm Record Structs as defined in Snmm.h
 	#define MaxDigBytes 10  
@@ -379,7 +378,8 @@ for ( int i = 0; i < CharCount; i++)
 
 
 // Called from TeknoSnmp.cs  
-  int trap::sendTrap(char* data, unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
+
+  int trap::sendTrap(pdu* data, unsigned long EventID, int LinkID, unsigned int ProcessorID,  unsigned int PortID, unsigned long Direction, unsigned int  MessageType, char TextBuffer[255], int TextLength )
   {
 	lStat = SnmpStartup(&lStat, &lStat, &lStat, &lStat, &lStat);
 	if (lStat == SNMPAPI_FAILURE)
@@ -469,7 +469,7 @@ for ( int i = 0; i < CharCount; i++)
 
 	return(SnmpReturnError);
   }
-   int trap::sendTrap(char* data)
+   int trap::sendTrap(pdu* data)
   {
 	lStat = SnmpStartup(&lStat, &lStat, &lStat, &lStat, &lStat);
 	if (lStat == SNMPAPI_FAILURE)
