@@ -1,0 +1,46 @@
+TEKNO-REGISTRATION-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY, OBJECT-IDENTITY, enterprises
+		FROM SNMPv2-SMI;
+
+teknotelecom MODULE-IDENTITY
+LAST-UPDATED "201108240000Z"
+ORGANIZATION "Tekno Telecom LLC"
+CONTACT-INFO "www.teknotelecom.com"
+DESCRIPTION
+	"This is the description of the Tekno Telecom Products"
+
+REVISION "201108240000Z"
+DESCRIPTION "testing revision description"
+
+REVISION "201108230000Z"
+DESCRIPTION "Initial MIB creation"
+::= { enterprises 36872 }
+
+
+teknoExperimental OBJECT-IDENTITY
+STATUS current
+DESCRIPTION
+	"All Teknotelecom expiremental products"
+::= { teknotelecom 1 }
+
+teknoProduction OBJECT-IDENTITY
+STATUS current
+DESCRIPTION
+	"All Teknotelecom products"
+::= { teknotelecom 2 }
+
+
+adminExperimental OBJECT-IDENTITY
+STATUS current
+DESCRIPTION
+	"Tekno Admin MIBs are organized under this node"
+::= { teknoExperimental 1 }
+
+adminProduction OBJECT-IDENTITY
+STATUS current
+DESCRIPTION
+	"Tekno Admin MIBs are organized under this node"
+::= { teknoProduction 1 }
+END

@@ -1,0 +1,159 @@
+TEKNO-PRODUCT-ADMIN-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  OBJECT-IDENTITY,MODULE-IDENTITY,OBJECT-TYPE,NOTIFICATION-TYPE,Integer32
+    FROM SNMPv2-SMI
+  DisplayString, TimeStamp
+    FROM SNMPv2-TC
+  OBJECT-GROUP,NOTIFICATION-GROUP,MODULE-COMPLIANCE
+    FROM SNMPv2-CONF
+  teknoProduction
+    FROM TEKNO-REGISTRATIONS-MIB;
+
+-- TeknoAdmin of stable quality (but experimental structure)
+teknoTrapMIB  MODULE-IDENTITY
+LAST-UPDATED "201207180000Z"
+ORGANIZATION "Tekno LLC"
+CONTACT-INFO "support@teknotelecom.com"
+DESCRIPTION  "This is a Tekno Admin Traps MIB" 
+
+REVISION     "201207180000Z"
+DESCRIPTION  "Initial Release"
+
+::= { teknoProduction 2 }
+
+teknoTrapMIBPrefix OBJECT IDENTIFIER
+-- ::= { teknoTrapMIB 0 }
+::= { teknoTrapMIB 0 }
+
+admin NOTIFICATION-TYPE
+  OBJECTS
+  {
+    eventType, teknoID, linkSet, linkQual, origin, destin,
+    threshold, occupancy, direction
+  }
+  STATUS current
+  DESCRIPTION "Admin Trap"
+::= { teknoTrapMIBPrefix 1 }
+
+teknoAdminEventList OBJECT-IDENTITY
+  STATUS current
+  DESCRIPTION "Tekno Admin Trap"
+::= { teknoTrapMIB 1 }
+
+--
+-- ---------------------------------------------
+--
+
+-- Event Type
+eventType OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Event Type"
+::= { teknoAdminEventList 1 }
+
+-- Tekno ID 
+teknoID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Tekno ID"
+::= { teknoAdminEventList 2 }
+
+-- Link Set
+linkSet OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Link Set"
+::= { teknoAdminEventList 3 }
+
+-- Link Quality
+linkQual OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Link Quality"
+::= { teknoAdminEventList 4 }
+
+-- Origin CLLI Code
+origin OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Origin CLLI Code"
+::= { teknoAdminEventList 5 }
+
+-- Destination CLLI Code
+destin OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Destination CLLI Code"
+::= { teknoAdminEventList 6 }
+
+-- Threshold
+threshold OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Threshold for problems on a link"
+::= { teknoAdminEventList 7 }
+
+-- Occupancy
+occupancy OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Occupancy of a link"
+::= { teknoAdminEventList 8 }
+
+-- Direction
+direction OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Direction of the link"
+::= { teknoAdminEventList 9 }
+
+teknoConformanceGroups OBJECT-IDENTITY
+  STATUS current
+  DESCRIPTION "Organizational node for Conformance Groups"
+::= { teknoConformance 1 }
+
+teknoAdminInfoGroup OBJECT-GROUP
+  OBJECTS
+  {
+    eventType, teknoID, linkSet, linkQual, origin, destin,
+    threshold, occupancy, direction
+  }
+  STATUS current
+  DESCRIPTION "Tekno Admin Info Group"
+::= { teknoConformanceGroups 1 }
+
+teknoAdminNotificationsGroup NOTIFICATION-GROUP
+  NOTIFICATIONS
+  {
+    admin
+  }
+  STATUS current
+  DESCRIPTION "Tekno ILM Notifications Group"
+::= { teknoConformanceGroups 2 }
+
+teknoProductCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION "Specification of mandatory & non-mandatory
+                MIB objects"
+    MODULE
+    MANDATORY-GROUPS
+      {
+        teknoAdminInfoGroup,
+        teknoAdminNotificationsGroup
+      }
+--    GROUP  teknoAdminProdControlGroup
+--    DESCRIPTION "A non-mandatory group"
+
+::= { teknoConformance 2 }
+
+END
