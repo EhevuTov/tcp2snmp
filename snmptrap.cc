@@ -2,6 +2,7 @@
 // O.M. Created.  2010
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "winsnmp.h"
 #include "time.h"
 #include "snmptrap.h"
@@ -12,6 +13,14 @@ SNMPAPI_STATUS CALLBACK cbFunc(HSNMP_SESSION hSession, HWND hWnd, UINT wMsg, WPA
 {
 	return SNMPAPI_SUCCESS;
 }
+trap::trap() {
+	init();
+
+	sprintf(trapTargetIP, "127.0.0.1");  //  for debug only !!!
+	snmpSendPort = 162;					 //  for debug only !!!
+	sprintf(Community, "public");		 //  for debug only !!!
+}
+
 void trap::init() {
 	hSession		= SNMPAPI_FAILURE;
 	hDst			= SNMPAPI_FAILURE;
@@ -44,8 +53,10 @@ void trap::init() {
 	snmpTrapOid[8]  = 0;
 
 	// make copies for some reason
-	memcpy (snmpTrapOid, trapValue, sizeof (snmpTrapOid)) ;
-	memcpy (snmpTrapOid, snmpTrapEnterprise, sizeof(snmpTrapOid));
+	//memcpy (&snmpTrapOid, &trapValue, sizeof (snmpTrapOid));
+	//memcpy (&snmpTrapOid, &snmpTrapEnterprise, sizeof(snmpTrapOid));
+	memcpy (trapValue, snmpTrapOid, sizeof (snmpTrapOid));
+	memcpy (snmpTrapEnterprise, snmpTrapOid, sizeof(snmpTrapOid));
 
 	//smiOID dSysUpTimeName   = {9, sysUpTime};
 	dSysUpTimeName.len = 9;
@@ -63,13 +74,6 @@ void trap::init() {
 	SnmpReturnError = 1;					// -1 failed, 1 success    
 }
 
-trap::trap() {
-	init();
-
-	sprintf(trapTargetIP, "192.168.1.119");  //  for debug only !!!
-	snmpSendPort = 162;					 //  for debug only !!!
-	sprintf(Community, "public");		 //  for debug only !!!
-}
 trap::trap(char TargetIp[15], char TargetCommunity[100], unsigned int TargetPort, unsigned int snmpSendPort, char trapTargetIP[15], char Community[100], int SnmpReturnError, char TextBuffer[255], unsigned char ContextBuffer[300]) {
 
 	smiOID dSysUpTimeName   = {9, sysUpTime};
@@ -115,7 +119,7 @@ for ( int i = 0; i < CharCount; i++)
 		netcluster,
 		netmember,
 		filler;      
-	} pointcode ;
+	} pointcode;
 
 	typedef
 	struct {
@@ -154,27 +158,62 @@ for ( int i = 0; i < CharCount; i++)
 	// Event Type
 	snmpTrapEnterprise[8] = 2;        // 
 	valEvent.syntax = SNMP_SYNTAX_INT;
-	valEvent.value.uNumber = (smiUINT32) data->eventType;
+ 	valEvent.value.uNumber = atoi(data->eventType);
 	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
 
 	// Tekno ID
 	snmpTrapEnterprise[8] = 3;        // 
 	valEvent.syntax = SNMP_SYNTAX_INT;
-	valEvent.value.uNumber = (smiUINT32) data->teknoID;
+	valEvent.value.uNumber = atoi(data->teknoID);
 	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
 
 	// Link Set
 	snmpTrapEnterprise[8] = 4;        // 
 	valEvent.syntax = SNMP_SYNTAX_OCTETS;
-	valEvent.value.string.len = 18;
-	valEvent.value.uNumber = (smiUINT32) data->linkSet;
+	valEvent.value.string.len = sizeof(data->linkSet);
+	valEvent.value.string.ptr = (smiLPBYTE) data->linkSet;
 	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
 
 	// Link Qual
 	snmpTrapEnterprise[8] = 5;        // 
 	valEvent.syntax = SNMP_SYNTAX_OCTETS;
 	valEvent.value.string.len = sizeof(data->linkQual);
-	valEvent.value.uNumber = (smiUINT32) data->linkQual;
+	valEvent.value.string.ptr = (smiLPBYTE) &data->linkQual;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Origin
+	snmpTrapEnterprise[8] = 6;        // 
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = sizeof(data->origin);
+	valEvent.value.string.ptr = (smiLPBYTE) &data->origin;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Destin
+	snmpTrapEnterprise[8] = 7;        // 
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = sizeof(data->destin);
+	valEvent.value.string.ptr = (smiLPBYTE) &data->destin;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Threshold
+	snmpTrapEnterprise[8] = 7;        // 
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = sizeof(data->destin);
+	valEvent.value.string.ptr = (smiLPBYTE) &data->destin;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Occupancy
+	snmpTrapEnterprise[8] = 7;        // 
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = sizeof(data->destin);
+	valEvent.value.string.ptr = (smiLPBYTE) &data->destin;
+	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
+
+	// Direction
+	snmpTrapEnterprise[8] = 7;        // 
+	valEvent.syntax = SNMP_SYNTAX_OCTETS;
+	valEvent.value.string.len = sizeof(data->destin);
+	valEvent.value.string.ptr = (smiLPBYTE) &data->destin;
 	lStat = SnmpSetVb(hVbl, 0, &dOID, &valEvent);
 
 	/*
@@ -483,7 +522,7 @@ for ( int i = 0; i < CharCount; i++)
 	hDst = SnmpStrToEntity(hSession, trapTargetIP);
 	lStat = SnmpSetPort(hDst, snmpSendPort);
 
-	int length = sprintf_s( (char*)ContextBuffer,sizeof(ContextBuffer), Community) ;
+	int length = sprintf_s( (char*)ContextBuffer,sizeof(ContextBuffer), Community);
 	dContext.ptr = &ContextBuffer[0];
 	dContext.len = length;
 	hContext = SnmpStrToContext(hSession, &dContext);

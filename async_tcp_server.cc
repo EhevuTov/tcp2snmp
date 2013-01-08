@@ -39,7 +39,11 @@ private:
     {
       boost::asio::buffer(data_, bytes_transferred);
       std::cout << data_ << std::endl;
-      trap trap(data_);
+
+	  trap* myTrap = new trap();
+	  myTrap->sendTrap((trap::pdu*)data_);
+	  delete myTrap;
+
     }
     else
     {
