@@ -1,32 +1,31 @@
-TEKNO-PRODUCT-ADMIN-MIB DEFINITIONS ::= BEGIN
+ADMIN-OCCUPANCY-MIB DEFINITIONS ::= BEGIN
 
 IMPORTS
   OBJECT-IDENTITY,MODULE-IDENTITY,OBJECT-TYPE,NOTIFICATION-TYPE,Integer32
     FROM SNMPv2-SMI
-  DisplayString, TimeStamp
+  DisplayString
     FROM SNMPv2-TC
   OBJECT-GROUP,NOTIFICATION-GROUP,MODULE-COMPLIANCE
     FROM SNMPv2-CONF
-  teknoProduction
+  teknoAdminProduction
     FROM TEKNO-REGISTRATIONS-MIB;
 
 -- TeknoAdmin of stable quality (but experimental structure)
-teknoTrapMIB  MODULE-IDENTITY
+adminOccupancyMIB  MODULE-IDENTITY
 LAST-UPDATED "201207180000Z"
 ORGANIZATION "Tekno LLC"
 CONTACT-INFO "support@teknotelecom.com"
-DESCRIPTION  "This is a Tekno Admin Traps MIB" 
+DESCRIPTION  "This is a Tekno Admin Occupancy Traps MIB" 
 
 REVISION     "201207180000Z"
 DESCRIPTION  "Initial Release"
 
-::= { teknoProduction 2 }
+::= { teknoAdminProduction 2 }
 
-teknoTrapMIBPrefix OBJECT IDENTIFIER
--- ::= { teknoTrapMIB 0 }
-::= { teknoTrapMIB 0 }
+adminOccupancyMIBPrefix OBJECT IDENTIFIER
+::= { adminOccupancyMIB 0 }
 
-admin NOTIFICATION-TYPE
+occupancyNotification NOTIFICATION-TYPE
   OBJECTS
   {
     eventType, teknoID, linkSet, linkQual, origin, destin,
@@ -34,12 +33,12 @@ admin NOTIFICATION-TYPE
   }
   STATUS current
   DESCRIPTION "Admin Trap"
-::= { teknoTrapMIBPrefix 1 }
+::= { adminOccupancyMIBPrefix 1 }
 
 teknoAdminEventList OBJECT-IDENTITY
   STATUS current
   DESCRIPTION "Tekno Admin Trap"
-::= { teknoTrapMIB 1 }
+::= { adminOccupancyMIB 1 }
 
 --
 -- ---------------------------------------------
@@ -117,6 +116,11 @@ direction OBJECT-TYPE
     DESCRIPTION "Direction of the link"
 ::= { teknoAdminEventList 9 }
 
+teknoConformance OBJECT-IDENTITY
+  STATUS current
+  DESCRIPTION "Organizational node for Conformance"
+::= { teknoAdminProduction 1 }
+
 teknoConformanceGroups OBJECT-IDENTITY
   STATUS current
   DESCRIPTION "Organizational node for Conformance Groups"
@@ -135,7 +139,7 @@ teknoAdminInfoGroup OBJECT-GROUP
 teknoAdminNotificationsGroup NOTIFICATION-GROUP
   NOTIFICATIONS
   {
-    admin
+    occupancyNotification
   }
   STATUS current
   DESCRIPTION "Tekno ILM Notifications Group"

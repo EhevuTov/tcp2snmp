@@ -32,15 +32,28 @@ DESCRIPTION
 ::= { teknotelecom 2 }
 
 
-adminExperimental OBJECT-IDENTITY
+nasProduction OBJECT-IDENTITY
 STATUS current
 DESCRIPTION
-	"Tekno Admin MIBs are organized under this node"
+	"Tekno nas MIBs are organized under this node"
+::= { teknoProduction 1 }
+
+nasExperimental OBJECT-IDENTITY
+STATUS current
+DESCRIPTION
+	"Tekno nas MIBs are organized under this node"
 ::= { teknoExperimental 1 }
 
-adminProduction OBJECT-IDENTITY
+
+teknoAdminProduction OBJECT-IDENTITY
 STATUS current
 DESCRIPTION
 	"Tekno Admin MIBs are organized under this node"
-::= { teknoProduction 1 }
+::= { nasProduction 1 }
+
+teknoAdminExperimental OBJECT-IDENTITY
+STATUS current
+DESCRIPTION
+	"Tekno Admin MIBs are organized under this node"
+::= { nasExperimental 1 }
 END
