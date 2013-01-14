@@ -1,0 +1,203 @@
+ADMIN-ILM-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+  OBJECT-IDENTITY,MODULE-IDENTITY,OBJECT-TYPE,NOTIFICATION-TYPE,Integer32
+    FROM SNMPv2-SMI
+  DisplayString, TimeStamp
+    FROM SNMPv2-TC
+  OBJECT-GROUP,NOTIFICATION-GROUP,MODULE-COMPLIANCE
+    FROM SNMPv2-CONF
+  teknoAdminProduction
+    FROM TEKNO-REGISTRATIONS-MIB;
+
+-- TeknoAdmin of stable quality (but experimental structure)
+adminILMMIB  MODULE-IDENTITY
+LAST-UPDATED "201207180000Z"
+ORGANIZATION "Tekno LLC"
+CONTACT-INFO "support@teknotelecom.com"
+DESCRIPTION  "This is a Tekno Admin ILM Traps MIB" 
+
+REVISION     "201207180000Z"
+DESCRIPTION  "Initial Release"
+
+::= { teknoAdminProduction 2 }
+
+
+adminILMMIBPrefix OBJECT IDENTIFIER
+::= { adminILMMIB 0 }
+
+ilm NOTIFICATION-TYPE
+  OBJECTS
+  {
+    time, event, ssgId, adjunctDeviceId, version, ssgClass, adjunctDeviceId2,
+    linkID, processorID, portID, direction, messageType , alarm
+  }
+  STATUS current
+  DESCRIPTION "ILM Trap"
+::= { adminILMMIBPrefix 1 }
+
+teknoIlmEventList OBJECT-IDENTITY
+  STATUS current
+  DESCRIPTION "ILM Trap"
+::= { adminILMMIB 1 }
+
+--
+-- ---------------------------------------------
+--
+
+-- time
+time OBJECT-TYPE
+    SYNTAX TimeStamp
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Time Stamp"
+::= { teknoIlmEventList 1 }
+
+-- event
+event OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "ID for the type of event"
+::= { teknoIlmEventList 2 }
+
+-- SSG ID
+ssgId OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "SSG ID"
+::= { teknoIlmEventList 3 }
+
+-- Adjunct Device ID
+adjunctDeviceId OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Adjunct Device ID"
+::= { teknoIlmEventList 4 }
+
+-- version
+version OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Version"
+    DEFVAL { "1" }
+::= { teknoIlmEventList 5 }
+
+-- ssgClass
+ssgClass OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "SSG Class"
+    DEFVAL { "1" }
+::= { teknoIlmEventList 6 }
+
+-- Adjunct Device ID
+adjunctDeviceId2 OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Identifier for the specific Adjucnt Device ID"
+    DEFVAL { 0 }
+::= { teknoIlmEventList 7 }
+
+-- Link ID
+linkID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Identifier for the specific link"
+    DEFVAL { -1 }
+::= { teknoIlmEventList 8 }
+
+-- Processor ID
+processorID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Identifier for the specific processor"
+::= { teknoIlmEventList 9 }
+
+-- Port ID
+portID OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Port ID"
+    DEFVAL { 0 }
+::= { teknoIlmEventList 10 }
+
+-- direction
+direction OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Link direction"
+    DEFVAL { 0 }
+::= { teknoIlmEventList 11 }
+
+-- Message Type
+messageType OBJECT-TYPE
+    SYNTAX Integer32
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Message type"
+    DEFVAL { 0 }
+::= { teknoIlmEventList 12 }
+
+-- alarm
+alarm OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS accessible-for-notify
+    STATUS current
+    DESCRIPTION "Text string describing the event"
+::= { teknoIlmEventList 13 }
+
+teknoConformance OBJECT-IDENTITY
+  STATUS current
+  DESCRIPTION "Organizational node for Conformance Groups"
+::= { teknoIlmEventList 14 }
+
+teknoConformanceGroups OBJECT-IDENTITY
+  STATUS current
+  DESCRIPTION "Organizational node for Conformance Groups"
+::= { teknoConformance 1 }
+
+teknoIlmInfoGroup OBJECT-GROUP
+  OBJECTS
+  {
+    time, event, ssgId, adjunctDeviceId, version, ssgClass, adjunctDeviceId2,
+    linkID, processorID, portID, direction, messageType , alarm
+  }
+  STATUS current
+  DESCRIPTION "Tekno ILM Info Group"
+::= { teknoConformanceGroups 1 }
+
+teknoIlmNotificationsGroup NOTIFICATION-GROUP
+  NOTIFICATIONS
+  {
+    ilm
+  }
+  STATUS current
+  DESCRIPTION "Tekno ILM Notifications Group"
+::= { teknoConformanceGroups 2 }
+
+teknoProductCompliance MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION "Specification of mandatory & non-mandatory
+                MIB objects"
+    MODULE
+    MANDATORY-GROUPS
+      {
+        teknoIlmInfoGroup,
+        teknoIlmNotificationsGroup        
+      }
+--    GROUP  teknoAdminProdControlGroup 
+--    DESCRIPTION "A non-mandatory group"
+
+::= { teknoConformance 2 }
+
+END
