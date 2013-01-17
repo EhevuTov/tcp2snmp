@@ -25,9 +25,9 @@ class trap {
 	smiUINT32 lStat;
 
 	smiUINT32 sysUpTime[9];
-	smiUINT32 snmpTrapOid[9];
-    smiUINT32 trapValue[9];
-	smiUINT32 snmpTrapEnterprise[9];
+	smiUINT32 snmpTrapOid[12];
+    smiUINT32 trapValue[12];
+	smiUINT32 snmpTrapEnterprise[12];
 
 	smiOID dSysUpTimeName;
 	smiOID dTrapName;
